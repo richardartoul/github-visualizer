@@ -24,16 +24,21 @@ $(document).ready(function () {
 			dataType: "json",
 			success: function(data) {
 				//draws circles from ajax response data
+				var color = d3.scale.category20c(); 
 				searchResults = data.items;
 				var JSONResults = convertResultsToJSON(data);
 
-				var width = 1600, height = 800;
+				var width = $(window).width(), height = $(window).height() * 0.9;
 				var pack = d3.layout.pack()
 					.size([width,height])
 					.value(function (d) {
-						return d.stargazers_count/100;
+						return d.stargazers_count;
 						// return Math.max(5, d.stargazers_count/100);
 					})
+					.sort(function(a,b) {
+						return Math.random() > 0.5 ? true : false;
+					})
+					.padding(100)
 				var packCalculations = pack.nodes(JSONResults);
 				var svg = d3.select("body").append("svg")
 					.attr("width", width)
@@ -45,7 +50,8 @@ $(document).ready(function () {
 
 				bubbles.append("circle")
 					.attr("r", function(d) {
-						return d.stargazers_count/100
+						// return d.stargazers_count/100 > 300 ? 100 : d.stargazers_count/100
+						return d.r;
 					})
 					.style("fill", "blue")
 					.attr("transform", function(d,i) {
@@ -69,6 +75,9 @@ $(document).ready(function () {
 						div.transition()
 							.duration(500)
 							.style("opacity", 0)
+					})
+					.on("click", function(d) {
+						window.open(d.html_url, '_blank');
 					})
 			}
 		});
