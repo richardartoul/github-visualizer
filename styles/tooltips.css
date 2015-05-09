@@ -1,0 +1,14 @@
+div.tooltip {   
+  position: absolute;           
+  text-align: center;   
+  /*Commented these out so tooltip would fit description*/
+/*  width: 60px;                  
+  height: 28px;     */            
+  padding: 2px;             
+  font: 12px sans-serif;        
+  background: lightsteelblue;   
+  border: 0px;      
+  border-radius: 8px;
+  /*Makes it so that when the mouse is over this object, it triggers hover effects on objects underneath it*/
+  pointer-events: none;         
+}
