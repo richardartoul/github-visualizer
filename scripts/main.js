@@ -1,11 +1,96 @@
 var convertResultsToJSON = function(data) {
-	// console.log(data.items);
 	var resultsJSONString = "{ \n \"search\": \"" + searchText + "\", \n \"children\":"
-	resultsJSONString += JSON.stringify(data.items);
+	resultsJSONString += JSON.stringify(data);
 	resultsJSONString += "}";
-	// console.log(resultsJSONString);
 	return JSON.parse(resultsJSONString);
 }
+
+var visualizeResultsFactory = function() {
+	var searchCount = 0;
+	var previousResults = [];
+	//array of colors for each result
+	var colors = d3.scale.category10().range();
+
+	return function(data) {
+		//draws circles from ajax response data
+		searchResults = data.items;
+		for (var i = 0; i < searchResults.length; i++) {
+			searchResults[i].searchCount = searchCount;
+		}
+		console.log("previous result looks like", previousResults);
+		for (var i = 0; i < previousResults.length; i++) {
+			searchResults = searchResults.concat(previousResults[i]);
+			console.log("search results after concat looks like",searchResults);
+		}
+		var JSONResults = convertResultsToJSON(searchResults);
+
+		previousResults.push(data.items);
+
+		var width = $(window).width(), height = $(window).height() * 0.9;
+
+		var pack = d3.layout.pack()
+			.size([width,height])
+			.value(function (d) {
+				return d.stargazers_count;
+			})
+			.sort(function(a,b) {
+				//randomly sorts circles
+				return Math.random() > 0.5 ? true : false;
+			})
+			.padding(100)
+
+		var packCalculations = pack.nodes(JSONResults);
+		console.log("packs", packCalculations);
+		packCalculations.shift();
+		console.log("pack after unshift", packCalculations);
+
+		var svg = d3.select("body").append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
+		var bubbles = svg.selectAll("g")
+			.data(packCalculations)
+			.enter()
+			.append("g");
+
+		bubbles.append("circle")
+			.attr("r", function(d) {
+				return d.r;
+			})
+			.attr("transform", function(d,i) {
+				return "translate(" + d.x + "," + d.y + ")"
+			})
+			.style("fill", function(d) {
+				return colors[d.searchCount];
+			});
+
+		var div = d3.select("body").append("div")   
+		    .attr("class", "tooltip")               
+		    .style("opacity", 0);
+
+		bubbles
+			.on('mouseover', function(d) {
+				div.transition()
+					.duration(200)
+					.style("opacity", 0.9)
+				div.html("<b>" + d.name + "</b>" + "<br>" + d.description)
+					.style("left", (d3.event.pageX) + "px")
+					.style("top", (d3.event.pageY - 28) + "px")
+			})
+			.on('mouseout', function(d) {
+				div.transition()
+					.duration(500)
+					.style("opacity", 0)
+			})
+			.on("click", function(d) {
+				window.open(d.html_url, '_blank');
+			})
+		//update closure data
+		searchCount++;
+		};
+}
+
+var visualizeResults = visualizeResultsFactory();
 
 //gets repository results from github api when user searches
 $(document).ready(function () {
@@ -23,62 +108,7 @@ $(document).ready(function () {
 			},
 			dataType: "json",
 			success: function(data) {
-				//draws circles from ajax response data
-				var color = d3.scale.category20c(); 
-				searchResults = data.items;
-				var JSONResults = convertResultsToJSON(data);
-
-				var width = $(window).width(), height = $(window).height() * 0.9;
-				var pack = d3.layout.pack()
-					.size([width,height])
-					.value(function (d) {
-						return d.stargazers_count;
-						// return Math.max(5, d.stargazers_count/100);
-					})
-					.sort(function(a,b) {
-						return Math.random() > 0.5 ? true : false;
-					})
-					.padding(100)
-				var packCalculations = pack.nodes(JSONResults);
-				var svg = d3.select("body").append("svg")
-					.attr("width", width)
-					.attr("height", height);
-				var bubbles = svg.selectAll("g")
-					.data(packCalculations[0].children)
-					.enter()
-					.append("g")
-
-				bubbles.append("circle")
-					.attr("r", function(d) {
-						// return d.stargazers_count/100 > 300 ? 100 : d.stargazers_count/100
-						return d.r;
-					})
-					.style("fill", "blue")
-					.attr("transform", function(d,i) {
-						return "translate(" + d.x + "," + d.y + ")"
-					});
-
-				var div = d3.select("body").append("div")   
-				    .attr("class", "tooltip")               
-				    .style("opacity", 0);
-
-				bubbles
-					.on('mouseover', function(d) {
-						div.transition()
-							.duration(200)
-							.style("opacity", 0.9)
-						div.html("<b>" + d.name + "</b>" + "<br>" + d.description)
-							.style("left", (d3.event.pageX) + "px")
-							.style("top", (d3.event.pageY - 28) + "px")
-					})
-					.on('mouseout', function(d) {
-						div.transition()
-							.duration(500)
-							.style("opacity", 0)
-					})
-					.on("click", function(d) {
-						window.open(d.html_url, '_blank');
-					})
+				visualizeResults(data);
 			}
 		});
     });
