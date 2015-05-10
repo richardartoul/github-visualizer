@@ -1,5 +1,7 @@
 //BubbleChart object will handle all data visualization
 var BubbleChart = function() {
+	//sets the number of bubbles to display
+	this.numBubbles = 5;
 	//keeps track of number of searches that have been performed
 	this.searchCount = 0;
 	//keeps track of previous search terms to be used as labels for the legend
@@ -54,6 +56,24 @@ BubbleChart.prototype.newData = function(searchTerm,data) {
 	this.searchCount++;	
 }
 
+BubbleChart.prototype.clearData = function() {
+	this.searchCount = 0;
+	this.previousResults = [];
+	this.render
+}
+
+BubbleChart.prototype.setNumBubbles = function(number) {
+	if (number > 100) {
+		this.numBubbles = 100;
+	}
+	else if (number < 0) {
+		this.numBubbles = 5;
+	}
+	else {
+		this.numBubbles = number;
+	}
+}
+
 //Renders the bubble chart
 BubbleChart.prototype.render = function() {
 	//resizes the svg element incase the window size has changed
@@ -66,7 +86,9 @@ BubbleChart.prototype.render = function() {
 
 	//concatenates all previous searches together into one long array
 	for (var i = 0; i < this.previousResults.length; i++) {
-		searchResults = searchResults.concat(this.previousResults[i]);
+		//limits the number of bubbles per search to the user defined amount
+		var subsetPreviousResults = this.previousResults[i].slice(0,this.numBubbles)
+		searchResults = searchResults.concat(subsetPreviousResults);
 	}
 
 	//converst the long array to a JSON format that d3 layout pack can interpret

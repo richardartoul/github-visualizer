@@ -26,4 +26,8 @@ $(document).ready(function () {
 			}
 		});
     });
+    //bubbleChart will re-render if window changes size
+    $(window).resize(function() {
+    	bubbleChart.render();
+    })
  });
