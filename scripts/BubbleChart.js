@@ -2,6 +2,8 @@
 var BubbleChart = function() {
 	//keeps track of number of searches that have been performed
 	this.searchCount = 0;
+	//keeps track of previous search terms to be used as labels for the legend
+	this.previousSearchTerms = []
 	//stores data retrieved from previous searches
 	this.previousResults = [];
 	//Returns an array of colors that will be used to distinguish search results from each other
@@ -42,12 +44,13 @@ BubbleChart.prototype.convertResultsToJSON = function(data) {
 //also appends a property called "searchCount" to each item in a specific
 //query which is later used to assign datapoints a color based on which
 //search they are from in the "render" function
-BubbleChart.prototype.newData = function(data) {
+BubbleChart.prototype.newData = function(searchTerm,data) {
 	searchResults = data.items;
 	for (var i = 0; i < searchResults.length; i++) {
 		searchResults[i].searchCount = this.searchCount;
 	}
 	this.previousResults.push(searchResults);
+	this.previousSearchTerms.push(searchTerm);
 	this.searchCount++;	
 }
 
@@ -157,23 +160,49 @@ BubbleChart.prototype.render = function() {
 			window.open(d.html_url, '_blank');
 		})
 
+	/*create an array of objects that contain two pieces of information
+	for each label so that it can be rendered properly: the color of the
+	bubbles it describes, as well as the search term of the query they
+	represent*/
+	var legendData = []
+	for (var i = 0; i < this.searchCount; i++) {
+		legendData.push(
+		{
+			color: colors[i],
+			label: this.previousSearchTerms[i]
+		})
+	}
+	/*bind this to a local variable so that the bubble charts properties
+	can be referenced inside the functions below*/
+	var that = this;
+	//creates a <g> tag to store each element of the legend
 	var legend = this.svg.selectAll(".legend")
-		.data(colors.slice(0,this.searchCount))
+		.data(legendData)
 		.enter()
 			.append("g")
 			.attr("class", "legend")
 			.attr("transform", function(d,i) {
 				var height = 20;
 				var offset = height * colors.length/2;
-				var xPosition = 40;
-				var yPosition = 40 + 50*i;
+				var xPosition = that.width()*0.075;
+				//ensures that g elements don't overlap and are vertically separated
+				var yPosition = that.height()*0.05 + 50*i;
 				return "translate(" + xPosition + "," + yPosition + ")";
 			})
 
+	/*generates the circle that represents each key in the legend
+	and assigns the appropriate color*/
 	legend.append("circle")
 		.attr("r", 20)
 		// .attr("height", 40)
 		.style("fill", function(d,i) {
-			return d;
+			return d.color;
+		})
+
+	legend.append("text")
+		.attr("x", "25")
+		.attr("y", "5")
+		.html(function(d) {
+			return d.label;
 		})
 };

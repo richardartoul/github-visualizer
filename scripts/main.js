@@ -21,7 +21,7 @@ $(document).ready(function () {
 			/*the bubblechart object handles all the data visualization on
 			completion of the search */
 			success: function(data) {
-				bubbleChart.newData(data);
+				bubbleChart.newData(searchText,data);
 				bubbleChart.render();
 			}
 		});
