@@ -85,11 +85,17 @@ var visualizeResultsFactory = function() {
 				div.html("<b>" + d.name + "</b>" + "<br>" + d.description)
 					.style("left", (d3.event.pageX) + "px")
 					.style("top", (d3.event.pageY - 28) + "px")
+				d3.select(this).selectAll("circle").transition()
+					.duration(100)
+					.attr("r", d.r*1.2)
 			})
 			.on('mouseout', function(d) {
 				div.transition()
 					.duration(500)
 					.style("opacity", 0)
+				d3.select(this).selectAll("circle").transition()
+					.duration(100)
+					.attr("r", d.r)
 			})
 			.on("click", function(d) {
 				window.open(d.html_url, '_blank');
