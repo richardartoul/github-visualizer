@@ -16,7 +16,7 @@ var BubbleChart = function() {
 	this.div = d3.select("body").append("div")   
 	    .attr("class", "tooltip")               
 	    .style("opacity", 0);
-}
+}	
 
 //width and height helper functions retrieve current viewport size
 BubbleChart.prototype.width = function() {
@@ -124,7 +124,8 @@ BubbleChart.prototype.render = function() {
 		});
 
 	var div = this.div;
-	//This block of code handles all the mouseover events for the bubbles
+	/*This block of code handles all the mouseover events for the bubbles
+	including rendering the tooltips.*/
 	bubbles
 		.on('mouseover', function(d) {
 			//Causes the tooltip to appear, but remain slightly transparent
@@ -154,5 +155,25 @@ BubbleChart.prototype.render = function() {
 		//turns the circles into clickable links that lead to their respective repositories
 		.on("click", function(d) {
 			window.open(d.html_url, '_blank');
+		})
+
+	var legend = this.svg.selectAll(".legend")
+		.data(colors.slice(0,this.searchCount))
+		.enter()
+			.append("g")
+			.attr("class", "legend")
+			.attr("transform", function(d,i) {
+				var height = 20;
+				var offset = height * colors.length/2;
+				var xPosition = 40;
+				var yPosition = 40 + 50*i;
+				return "translate(" + xPosition + "," + yPosition + ")";
+			})
+
+	legend.append("circle")
+		.attr("r", 20)
+		// .attr("height", 40)
+		.style("fill", function(d,i) {
+			return d;
 		})
 };
