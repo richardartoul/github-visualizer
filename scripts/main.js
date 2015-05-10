@@ -11,6 +11,11 @@ var visualizeResultsFactory = function() {
 	//array of colors for each result
 	var colors = d3.scale.category10().range();
 
+	var width = $(window).width(), height = $(window).height() * 0.9;
+	var svg = d3.select("body").append("svg")
+			.attr("width", width)
+			.attr("height", height);
+
 	return function(data) {
 		//draws circles from ajax response data
 		searchResults = data.items;
@@ -26,7 +31,7 @@ var visualizeResultsFactory = function() {
 
 		previousResults.push(data.items);
 
-		var width = $(window).width(), height = $(window).height() * 0.9;
+		// var width = $(window).width(), height = $(window).height() * 0.9;
 
 		var pack = d3.layout.pack()
 			.size([width,height])
@@ -44,9 +49,13 @@ var visualizeResultsFactory = function() {
 		packCalculations.shift();
 		console.log("pack after unshift", packCalculations);
 
-		var svg = d3.select("body").append("svg")
-			.attr("width", width)
-			.attr("height", height);
+		// var svg = d3.select("body").append("svg")
+		// 	.attr("width", width)
+		// 	.attr("height", height);
+
+		//remove old bubbles
+		svg.selectAll("g")
+			.remove();
 
 		var bubbles = svg.selectAll("g")
 			.data(packCalculations)
