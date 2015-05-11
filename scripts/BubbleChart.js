@@ -20,6 +20,8 @@ var BubbleChart = function() {
 	this.div = d3.select("body").append("div")   
 	    .attr("id", "tooltip")               
 	    .style("opacity", 0);
+	//various visual settings that can be tweaked
+	this.padding = 20;
 }	
 
 //width and height helper functions retrieve current viewport size
@@ -59,7 +61,8 @@ BubbleChart.prototype.newData = function(searchTerm,data) {
 BubbleChart.prototype.clearData = function() {
 	this.searchCount = 0;
 	this.previousResults = [];
-	this.render
+	this.previousSearchTerms = [];
+	this.render();
 }
 
 BubbleChart.prototype.setNumBubbles = function(number) {
@@ -74,12 +77,22 @@ BubbleChart.prototype.setNumBubbles = function(number) {
 	}
 }
 
+//checks if a search has been performed before
+BubbleChart.prototype.searchedBefore = function(searchTerm) {
+	for (var i = 0; i < this.previousSearchTerms.length; i++) {
+		if (this.previousSearchTerms[i] === searchTerm) {
+			return true;
+		}
+	}
+	return false;
+}
+
 //Renders the bubble chart
 BubbleChart.prototype.render = function() {
 	//resizes the svg element incase the window size has changed
 	this.svg
 		.attr("width", this.width())
-		.attr("height", this.height())
+		.attr("height", this.height()*0.95)
 
 	var searchResults = [];
 	var colors = this.colors;
@@ -114,7 +127,7 @@ BubbleChart.prototype.render = function() {
 			return Math.random() > 0.5 ? true : false;
 		})
 		//sets the amount of padding between circles
-		.padding(100)
+		.padding(this.padding)
 
 	/*calls the layout function and returns an array of all the results, with "x", "y", and "r"
 	properties added*/
@@ -144,6 +157,10 @@ BubbleChart.prototype.render = function() {
 			//All circles from the same search query will be of the same color
 			return colors[d.searchCount];
 		});
+
+	/*removes bubbles if necessary (only occurs when reducing the number
+	 of bubbles to display on the screen)*/
+	allBubbles.exit().remove()
 
 	/*This block of code handles all the mouseover events for the bubbles
 	including rendering the tooltips.*/
@@ -194,9 +211,14 @@ BubbleChart.prototype.render = function() {
 	/*bind this to a local variable so that the bubble charts properties
 	can be referenced inside the functions below*/
 	var that = this;
+
+	//removes all old elements
+	this.svg.selectAll(".legendBubble").remove();
+
 	//creates a <g> tag to store each element of the legend
-	var legend = this.svg.selectAll(".legendBubble")
-		.data(legendData)
+	var legend = this.svg.selectAll(".legendBubble").data(legendData)
+		
+	legend
 		.enter()
 			.append("g")
 			.attr("class", "legendBubble")
@@ -207,7 +229,7 @@ BubbleChart.prototype.render = function() {
 				//ensures that g elements don't overlap and are vertically separated
 				var yPosition = that.height()*0.05 + 50*i;
 				return "translate(" + xPosition + "," + yPosition + ")";
-			})
+			});
 
 	/*generates the circle that represents each key in the legend
 	and assigns the appropriate color*/
@@ -216,12 +238,16 @@ BubbleChart.prototype.render = function() {
 		// .attr("height", 40)
 		.style("fill", function(d,i) {
 			return d.color;
-		})
+		});
 
 	legend.append("text")
 		.attr("x", "25")
 		.attr("y", "5")
 		.html(function(d) {
 			return d.label;
-		})
+		});
+
+	//removes old legends if necessary (when reset button is hit)
+	legend.exit()
+		.remove();
 };

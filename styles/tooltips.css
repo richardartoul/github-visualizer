@@ -1,7 +1,6 @@
 div#tooltip {   
   position: absolute;           
   text-align: center;
-  width: 25%;   
   padding: 5px 15px; 
   color: #fff;            
   font: 18px sans-serif;        
