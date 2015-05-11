@@ -1,7 +1,7 @@
 //BubbleChart object will handle all data visualization
 var BubbleChart = function() {
 	//sets the number of bubbles to display
-	this.numBubbles = 5;
+	this.numBubbles = 20;
 	//keeps track of number of searches that have been performed
 	this.searchCount = 0;
 	//keeps track of previous search terms to be used as labels for the legend
