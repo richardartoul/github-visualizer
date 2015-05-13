@@ -23,14 +23,15 @@ $(document).ready(function () {
 				completion of the search */
 				success: function(data) {
 					bubbleChart.newData(searchText,data);
-					bubbleChart.render();
+          bubbleChart.render();
 				}
 			});
 	  	}
     });
     //bubbleChart will re-render if window changes size
     $(window).resize(function() {
-    	bubbleChart.render();
+      console.log('resized!');
+      bubbleChart.throttled();
     });
     $('#searchNumber').change(function(event) {
     	bubbleChart.setNumBubbles($(this).val());

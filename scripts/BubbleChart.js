@@ -1,27 +1,42 @@
 //BubbleChart object will handle all data visualization
 var BubbleChart = function() {
+	
 	//sets the number of bubbles to display
 	this.numBubbles = 20;
+	
 	//keeps track of number of searches that have been performed
 	this.searchCount = 0;
+	
 	//keeps track of previous search terms to be used as labels for the legend
 	this.previousSearchTerms = []
+	
 	//stores data retrieved from previous searches
 	this.previousResults = [];
+
+	//throttles time between rerenderings on window resize
+	this.throttleTime = 500; //milliseconds
+
 	//Returns an array of colors that will be used to distinguish search results from each other
 	this.colors = d3.scale.category10().range();
+
 	//Creates the SVG element which will hold all the circles. Included here
 	//because only one SVG element is required per BubbleChart
 	this.svg = d3.select("body").append("svg")
 		.attr("width", this.width())
 		.attr("height", this.height())
+
 	/*creates the div element that will be used to display tooltips. The same
 	div is used for each bubble, so it only needs to be generated once*/
 	this.div = d3.select("body").append("div")   
 	    .attr("id", "tooltip")               
 	    .style("opacity", 0);
+
 	//various visual settings that can be tweaked
 	this.padding = 20;
+
+	this.throttled = _.throttle(this.render, this.throttleTime);
+    console.log(JSON.stringify(this.throttled));
+    console.log(JSON.stringify(_.throttle));
 }	
 
 //width and height helper functions retrieve current viewport size
@@ -89,10 +104,15 @@ BubbleChart.prototype.searchedBefore = function(searchTerm) {
 
 //Renders the bubble chart
 BubbleChart.prototype.render = function() {
+	console.log(this);
+	console.log(arguments);
+	this.lastRender = Date.now();
+	var x = $(window).width();
+	var y = $(window).height();
 	//resizes the svg element incase the window size has changed
 	this.svg
-		.attr("width", this.width())
-		.attr("height", this.height()*0.95)
+		.attr("width", x)
+		.attr("height", y*0.95)
 
 	var searchResults = [];
 	var colors = this.colors;
