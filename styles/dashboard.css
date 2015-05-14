@@ -3,6 +3,11 @@ body {
   overflow: hidden;
 }
 
+.starDiv{
+  font-size: 100px;
+  color:# 000;
+}
+
 .sub-header {
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;

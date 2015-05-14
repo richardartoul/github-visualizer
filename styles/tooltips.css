@@ -10,3 +10,14 @@ div#tooltip {
   /*Makes it so that when the mouse is over this object, it triggers hover effects on objects underneath it*/
   pointer-events: none;         
 }
+div#starDiv{
+   position: absolute;           
+  text-align: center;
+  padding: 5px 15px; 
+  color: #000;            
+  font: 24px sans-serif;        
+  border-radius: 5px;
+  pointer-events: none;    
+  background: #ddd;     
+ background: (6, 6, 6, .8);
+}

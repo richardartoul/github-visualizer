@@ -30,7 +30,6 @@ $(document).ready(function () {
     });
     //bubbleChart will re-render if window changes size
     $(window).resize(function() {
-      console.log('resized!');
       bubbleChart.throttled();
     });
     $('#searchNumber').change(function(event) {

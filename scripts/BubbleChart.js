@@ -31,12 +31,15 @@ var BubbleChart = function() {
 	    .attr("id", "tooltip")               
 	    .style("opacity", 0);
 
+	//Makes div element that displays stars
+	this.starDiv = d3.select("body").append("div")
+			.attr("id", "starDiv")
+			.style("opacity", 0);
+
 	//various visual settings that can be tweaked
 	this.padding = 20;
 
 	this.throttled = _.throttle(this.render, this.throttleTime);
-    console.log(JSON.stringify(this.throttled));
-    console.log(JSON.stringify(_.throttle));
 }	
 
 //width and height helper functions retrieve current viewport size
@@ -104,15 +107,11 @@ BubbleChart.prototype.searchedBefore = function(searchTerm) {
 
 //Renders the bubble chart
 BubbleChart.prototype.render = function() {
-	console.log(this);
-	console.log(arguments);
 	this.lastRender = Date.now();
-	var x = $(window).width();
-	var y = $(window).height();
 	//resizes the svg element incase the window size has changed
 	this.svg
-		.attr("width", x)
-		.attr("height", y*0.95)
+		.attr("width", this.width())
+		.attr("height", this.height()*0.95)
 
 	var searchResults = [];
 	var colors = this.colors;
@@ -185,6 +184,7 @@ BubbleChart.prototype.render = function() {
 	/*This block of code handles all the mouseover events for the bubbles
 	including rendering the tooltips.*/
 	var div = this.div;
+	var starDiv = this.starDiv;
 	allBubbles
 		.on('mouseover', function(d) {
 			//Causes the tooltip to appear, but remain slightly transparent
@@ -195,16 +195,33 @@ BubbleChart.prototype.render = function() {
 			div.html("<b>" + d.name + "</b>" + "<br>" + d.description)
 				/*positions the tooltip to the location of the mouse at the time
 				the mouseover event occurred (d3.event) */
-				.style("left", (d3.event.pageX) + "px")
-				.style("top", (d3.event.pageY - 28) + "px")
+				.style("left", (d.x+80) + "px")
+				.style("top", (d.y+78) + "px")
+
+			//Sets the text for star div tooltip
+			starDiv.transition()
+				.duration(200)
+				.style("opacity", 0.6)
+
+			//Sets value of star div
+			starDiv.html("<b>★" + Math.floor(d.stargazers_count) + "</b>")
+
+			//Adjusts stardiv position by its own width
+			starDiv.style("left", d.x - ($('#starDiv')[0].getBoundingClientRect().width/2) + "px")
+				.style("top", d.y + ($('#starDiv')[0].getBoundingClientRect().height*14/17) + "px")
+
 			//circles grow slightly larger when moused over
 			d3.select(this).transition()
 				.duration(100)
 				.attr("r", d.r*1.2)
+
 		})
 		//undoes all the events that occur in the mouseover listener
 		.on('mouseout', function(d) {
 			div.transition()
+				.duration(500)
+				.style("opacity", 0)
+			starDiv.transition()
 				.duration(500)
 				.style("opacity", 0)
 			d3.select(this).transition()
