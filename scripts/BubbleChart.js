@@ -39,7 +39,7 @@ var BubbleChart = function() {
 	//various visual settings that can be tweaked
 	this.padding = 20;
 
-	this.throttled = _.throttle(this.render, this.throttleTime);
+	this.throttledRender = _.throttle(this.render, this.throttleTime);
 }	
 
 //width and height helper functions retrieve current viewport size
