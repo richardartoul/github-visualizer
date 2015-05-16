@@ -1,27 +1,45 @@
 //BubbleChart object will handle all data visualization
 var BubbleChart = function() {
+	
 	//sets the number of bubbles to display
 	this.numBubbles = 20;
+	
 	//keeps track of number of searches that have been performed
 	this.searchCount = 0;
+	
 	//keeps track of previous search terms to be used as labels for the legend
 	this.previousSearchTerms = []
+	
 	//stores data retrieved from previous searches
 	this.previousResults = [];
+
+	//throttles time between rerenderings on window resize
+	this.throttleTime = 500; //milliseconds
+
 	//Returns an array of colors that will be used to distinguish search results from each other
 	this.colors = d3.scale.category10().range();
+
 	//Creates the SVG element which will hold all the circles. Included here
 	//because only one SVG element is required per BubbleChart
 	this.svg = d3.select("body").append("svg")
 		.attr("width", this.width())
 		.attr("height", this.height())
+
 	/*creates the div element that will be used to display tooltips. The same
 	div is used for each bubble, so it only needs to be generated once*/
 	this.div = d3.select("body").append("div")   
 	    .attr("id", "tooltip")               
 	    .style("opacity", 0);
+
+	//Makes div element that displays stars
+	this.starDiv = d3.select("body").append("div")
+			.attr("id", "starDiv")
+			.style("opacity", 0);
+
 	//various visual settings that can be tweaked
 	this.padding = 20;
+
+	this.throttledRender = _.throttle(this.render, this.throttleTime);
 }	
 
 //width and height helper functions retrieve current viewport size
@@ -89,6 +107,7 @@ BubbleChart.prototype.searchedBefore = function(searchTerm) {
 
 //Renders the bubble chart
 BubbleChart.prototype.render = function() {
+	this.lastRender = Date.now();
 	//resizes the svg element incase the window size has changed
 	this.svg
 		.attr("width", this.width())
@@ -165,6 +184,7 @@ BubbleChart.prototype.render = function() {
 	/*This block of code handles all the mouseover events for the bubbles
 	including rendering the tooltips.*/
 	var div = this.div;
+	var starDiv = this.starDiv;
 	allBubbles
 		.on('mouseover', function(d) {
 			//Causes the tooltip to appear, but remain slightly transparent
@@ -175,16 +195,33 @@ BubbleChart.prototype.render = function() {
 			div.html("<b>" + d.name + "</b>" + "<br>" + d.description)
 				/*positions the tooltip to the location of the mouse at the time
 				the mouseover event occurred (d3.event) */
-				.style("left", (d3.event.pageX) + "px")
-				.style("top", (d3.event.pageY - 28) + "px")
+				.style("left", (d.x+80) + "px")
+				.style("top", (d.y+78) + "px")
+
+			//Sets the text for star div tooltip
+			starDiv.transition()
+				.duration(200)
+				.style("opacity", 0.6)
+
+			//Sets value of star div
+			starDiv.html("<b>★" + Math.floor(d.stargazers_count) + "</b>")
+
+			//Adjusts stardiv position by its own width
+			starDiv.style("left", d.x - ($('#starDiv')[0].getBoundingClientRect().width/2) + "px")
+				.style("top", d.y + ($('#starDiv')[0].getBoundingClientRect().height*14/17) + "px")
+
 			//circles grow slightly larger when moused over
 			d3.select(this).transition()
 				.duration(100)
 				.attr("r", d.r*1.2)
+
 		})
 		//undoes all the events that occur in the mouseover listener
 		.on('mouseout', function(d) {
 			div.transition()
+				.duration(500)
+				.style("opacity", 0)
+			starDiv.transition()
 				.duration(500)
 				.style("opacity", 0)
 			d3.select(this).transition()
